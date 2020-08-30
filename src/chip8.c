@@ -66,6 +66,7 @@ static void chip8_exec_extended(struct chip8 *cpu, uint16_t opcode)
     uint16_t nnn = (opcode & 0x0fff);
     //uint8_t n = (opcode & 0x000f);
     uint8_t x = (opcode & 0x0f00) >> 8;
+    uint8_t y = (opcode & 0x00f0) >> 4;
     uint8_t kk = (opcode & 0x00ff);
 
     switch (opcode & 0xf000)
@@ -92,6 +93,22 @@ static void chip8_exec_extended(struct chip8 *cpu, uint16_t opcode)
         {
             *PC = *PC + 2;
         }
+        break;
+    case 0x500:
+        // 5xy0 - SE Vx, Vy, Skip next instruction if Vx = Vy.
+        if (cpu->registers.V[x] == cpu->registers.V[x])
+        {
+            *PC = *PC + 2;
+        }
+        break;
+    case 0x600:
+        // 6xkk - LD Vx, byte, Set Vx = kk.
+        cpu->registers.V[x] = kk;
+        break;
+
+    case 0x700:
+        // 7xkk - ADD Vx, byte, Set Vx = Vx + kk.
+        cpu->registers.V[x] += kk;
         break;
     }
 }
