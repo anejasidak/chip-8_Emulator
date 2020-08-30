@@ -2,6 +2,7 @@
 #define CHIP8_STACK_H_
 
 #include "config.h"
+#include <stdint.h>
 
 struct chip8;
 struct chip8_stack

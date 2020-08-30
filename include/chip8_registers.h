@@ -2,6 +2,7 @@
 #define CHIP8_REGISTERS_H_
 
 #include "config.h"
+#include <stdint.h>
 
 struct chip8_registers
 {
