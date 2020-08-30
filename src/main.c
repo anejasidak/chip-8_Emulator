@@ -17,6 +17,10 @@ int main(int argc, char **argv)
     struct chip8 cpu;
     chip8_init(&cpu);
 
+    chip8_screen_set(&cpu.screen, 0, 0);
+
+    chip8_screen_set(&cpu.screen, 10, 10);
+
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -74,10 +78,30 @@ int main(int argc, char **argv)
             break;
             }
         }
-        if (isActive)
+        if (!isActive)
         {
-            SDL_RenderClear(renderer);
+            break;
         }
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        SDL_RenderClear(renderer);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+
+        for (int x = 0; x < DISPLAY_WIDTH; x++)
+        {
+            for (int y = 0; y < DISPLAY_HEIGHT; y++)
+            {
+                if (chip8_screen_is_set(&cpu.screen, x, y))
+                {
+                    SDL_Rect r;
+                    r.x = x * DISPLAY_SCALE;
+                    r.y = y * DISPLAY_SCALE;
+                    r.w = DISPLAY_SCALE;
+                    r.h = DISPLAY_SCALE;
+                    SDL_RenderFillRect(renderer, &r);
+                }
+            }
+        }
+        SDL_RenderPresent(renderer);
     }
 
     // Close the window and quit SDL to  clean up all initialized subsystems.
