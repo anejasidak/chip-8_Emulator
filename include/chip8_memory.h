@@ -11,6 +11,6 @@ struct chip8_memory
 
 void chip8_memory_set(struct chip8_memory *ram, int index, uint8_t value);
 uint8_t chip8_memory_get(struct chip8_memory *ram, int index);
-
+uint16_t chip8_memory_get_ins(struct chip8_memory *ram, int index);
 
 #endif

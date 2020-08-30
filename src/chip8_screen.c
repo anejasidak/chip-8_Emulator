@@ -1,5 +1,7 @@
 #include "chip8_screen.h"
 #include <assert.h>
+#include <string.h>
+
 
 static void chip8_screen_check_bounds(int x, int y)
 {
@@ -36,4 +38,9 @@ bool chip8_screen_draw_sprite(struct chip8_screen *screen, int x, int y, const u
         }
     }
     return pixel_collision;
+}
+
+void chip8_screen_clear(struct chip8_screen *screen)
+{
+    memset(screen->pixels, 0, sizeof(screen->pixels));
 }

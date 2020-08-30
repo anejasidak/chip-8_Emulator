@@ -2,7 +2,7 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include <unistd.h>
- 
+
 #include "config.h"
 #include "chip8.h"
 #include "chip8_memory.h"
@@ -15,10 +15,41 @@ static char keyboard_map[TOTAL_KEYS] = {
 
 int main(int argc, char **argv)
 {
+    if (argc < 2)
+    {
+        printf("Please provide a file to load\n");
+        return -1;
+    }
+
+    const char *filename = argv[1];
+    FILE *f = fopen(filename, "r");
+
+    if (!f)
+    {
+        printf("Failed to open file\n");
+        return -1;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    char buf[size];
+
+    if (fread(buf, size, 1, f) != 1)
+    {
+        printf("Could not read file\n");
+        fclose(f);
+        return -1;
+    }
+    fclose(f);
+
     struct chip8 cpu;
     chip8_init(&cpu);
+    chip8_load(&cpu, buf, size);
 
-    chip8_screen_draw_sprite(&cpu.screen, 60, 30, &cpu.ram.memory_array[0x0a], 5);
+    chip8_load(&cpu, "Hello world", sizeof("Hello world"));
+
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -100,17 +131,21 @@ int main(int argc, char **argv)
             }
         }
         SDL_RenderPresent(renderer);
-        if (cpu.registers.delay_timer)
+        if (cpu.registers.delay_timer > 0)
         {
-            sleep(100);
+            sleep(0.1);
             cpu.registers.delay_timer--;
         }
-        if (cpu.registers.sound_timer)
+        if (cpu.registers.sound_timer > 0)
         {
             //No beeping sound implemented yet
             cpu.registers.sound_timer--;
-
         }
+
+        uint16_t opcode = chip8_memory_get_ins(&cpu.ram, cpu.registers.PC);
+        chip8_exec(&cpu, opcode);
+        printf("%02x\n", opcode);
+        cpu.registers.PC += 2;
     }
 
     // Close the window and quit SDL to  clean up all initialized subsystems.
