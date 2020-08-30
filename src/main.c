@@ -142,10 +142,11 @@ int main(int argc, char **argv)
             cpu.registers.sound_timer--;
         }
 
+        cpu.registers.PC += 2;
+
         uint16_t opcode = chip8_memory_get_ins(&cpu.ram, cpu.registers.PC);
         chip8_exec(&cpu, opcode);
         printf("%02x\n", opcode);
-        cpu.registers.PC += 2;
     }
 
     // Close the window and quit SDL to  clean up all initialized subsystems.
