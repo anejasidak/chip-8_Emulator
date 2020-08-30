@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 
+#include "config.h"
+#include "chip8.h"
+#include "chip8_memory.h"
+
 int main(int argc, char **argv)
 {
     // Initialize SDL
@@ -16,12 +20,26 @@ int main(int argc, char **argv)
     *       To have better viewing, the display has been scaled up by 10 times.
     */
     SDL_Window *window = SDL_CreateWindow(
-        "Chip8 window",
+        EMULATOR_WINDOW_TITLE,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        640, 320, 0
-
+        DISPLAY_WIDTH * DISPLAY_SCALE, DISPLAY_HEIGHT * DISPLAY_SCALE, 0
     );
+
+
+    struct chip8 cpu;
+    memset(&cpu, 0, sizeof cpu);
+    memory_set(&cpu.ram, 50, 100);
+    printf("%d\n", memory_get(&cpu.ram, 50));
+
+
+
+
+
+
+
+
+
 
     while (1) // Conditions added later
     {
