@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <stdbool.h>
-
+#include <unistd.h>
+ 
 #include "config.h"
 #include "chip8.h"
 #include "chip8_memory.h"
@@ -17,10 +18,7 @@ int main(int argc, char **argv)
     struct chip8 cpu;
     chip8_init(&cpu);
 
-    chip8_screen_set(&cpu.screen, 0, 0);
-
-    chip8_screen_set(&cpu.screen, 10, 10);
-
+    chip8_screen_draw_sprite(&cpu.screen, 60, 30, &cpu.ram.memory_array[0x0a], 5);
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -102,6 +100,17 @@ int main(int argc, char **argv)
             }
         }
         SDL_RenderPresent(renderer);
+        if (cpu.registers.delay_timer)
+        {
+            sleep(100);
+            cpu.registers.delay_timer--;
+        }
+        if (cpu.registers.sound_timer)
+        {
+            //No beeping sound implemented yet
+            cpu.registers.sound_timer--;
+
+        }
     }
 
     // Close the window and quit SDL to  clean up all initialized subsystems.

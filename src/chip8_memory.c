@@ -4,7 +4,6 @@
 #include "config.h"
 #include "chip8_memory.h"
 
-
 static void chip8_memory_is_in_bound(int index)
 {
     assert(index >= 0 && index < MEMORY_SIZE);
