@@ -48,7 +48,7 @@ int main(int argc, char **argv)
     chip8_init(&cpu);
     chip8_load(&cpu, buf, size);
 
-    chip8_load(&cpu, "Hello world", sizeof("Hello world"));
+    chip8_keyboard_set_map(&cpu.keyboard, keyboard_map);
 
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
             case SDL_KEYDOWN:
             {
                 char key = event.key.keysym.sym;
-                int vkey = chip8_keyboard_map(keyboard_map, key);
+                int vkey = chip8_keyboard_map(&cpu.keyboard, key);
                 if (vkey != -1)
                 {
                     chip8_keyboard_press_down(&cpu.keyboard, vkey);
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
             {
 
                 char key = event.key.keysym.sym;
-                int vkey = chip8_keyboard_map(keyboard_map, key);
+                int vkey = chip8_keyboard_map(&cpu.keyboard, key);
                 if (vkey != -1)
                 {
                     chip8_keyboard_press_up(&cpu.keyboard, vkey);
@@ -133,20 +133,21 @@ int main(int argc, char **argv)
         SDL_RenderPresent(renderer);
         if (cpu.registers.delay_timer > 0)
         {
-            sleep(0.1);
+            sleep(0.9);
             cpu.registers.delay_timer--;
         }
         if (cpu.registers.sound_timer > 0)
         {
             //No beeping sound implemented yet
-            cpu.registers.sound_timer--;
+            cpu.registers.sound_timer = 0;
         }
 
-        cpu.registers.PC += 2;
-
+        
         uint16_t opcode = chip8_memory_get_ins(&cpu.ram, cpu.registers.PC);
+        cpu.registers.PC += 2;
         chip8_exec(&cpu, opcode);
         printf("%02x\n", opcode);
+        sleep(0.9);
     }
 
     // Close the window and quit SDL to  clean up all initialized subsystems.
