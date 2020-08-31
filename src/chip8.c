@@ -52,6 +52,69 @@ void chip8_exec(struct chip8 *cpu, uint16_t opcode)
     }
 }
 
+static void chip8_exec_extended_eight(struct chip8 *cpu, uint16_t opcode)
+{
+
+    uint8_t x = (opcode & 0x0f00) >> 8;
+    uint8_t y = (opcode & 0x00f0) >> 4;
+
+    switch (opcode & 0x000f)
+    {
+    case 0x0:
+        // 8xy0 - LD Vx, Vy, Set Vx = Vy.
+        cpu->registers.V[x] = cpu->registers.V[y];
+        break;
+
+    case 0x1:
+        // 8xy1 - OR Vx, Vy, Set Vx = Vx OR Vy.
+        cpu->registers.V[x] |= cpu->registers.V[y];
+        break;
+
+    case 0x2:
+        // 8xy2 - AND Vx, Vy, Set Vx = Vx AND Vy.
+        cpu->registers.V[x] &= cpu->registers.V[y];
+        break;
+    case 0x3:
+        // 8xy2 - XOR Vx, Vy, Set Vx = Vx XOR Vy.
+        cpu->registers.V[x] ^= cpu->registers.V[y];
+        break;
+    case 0x4:
+        //  8xy4 - ADD Vx, Vy, Set Vx = Vx + Vy, set VF = carry.
+        cpu->registers.V[0x0f] = 0;
+        uint16_t sum = cpu->registers.V[x] + cpu->registers.V[y];
+
+        if (sum > 0xff)
+        {
+            cpu->registers.V[0x0f] = 1;
+        }
+        cpu->registers.V[x] = sum & 0x00ff;
+        break;
+    case 0x05:
+        //  8xy5 - SUB Vx, Vy, Set Vx = Vx - Vy, set VF = NOT borrow.
+        cpu->registers.V[0x0f] = 0;
+        if (cpu->registers.V[x] > cpu->registers.V[y])
+        {
+            cpu->registers.V[0x0f] = 1;
+        }
+        cpu->registers.V[x] -= cpu->registers.V[y];
+        break;
+    case 0x06:
+        // 8xy6 - SHR Vx {, Vy} Set Vx = Vx SHR 1.
+        cpu->registers.V[0x0f] = cpu->registers.V[x] & 0x01;
+        cpu->registers.V[x] >>= 2;
+        break;
+    case 0x07:
+        // 8xy7 - SUBN Vx, Vy, Set Vx = Vy - Vx, set VF = NOT borrow.
+        cpu->registers.V[0x0f] = cpu->registers.V[y] > cpu->registers.V[x];
+        cpu->registers.V[y] -= cpu->registers.V[x];
+        break;
+    case 0x0E:
+        cpu->registers.V[0x0f] = cpu->registers.V[x] & 0x01;
+        cpu->registers.V[x] <<= 2;
+        break;
+    }
+}
+
 static void chip8_exec_extended(struct chip8 *cpu, uint16_t opcode)
 {
     uint16_t *PC = &cpu->registers.PC;
@@ -96,7 +159,7 @@ static void chip8_exec_extended(struct chip8 *cpu, uint16_t opcode)
         break;
     case 0x500:
         // 5xy0 - SE Vx, Vy, Skip next instruction if Vx = Vy.
-        if (cpu->registers.V[x] == cpu->registers.V[x])
+        if (cpu->registers.V[x] == cpu->registers.V[y])
         {
             *PC = *PC + 2;
         }
@@ -109,6 +172,9 @@ static void chip8_exec_extended(struct chip8 *cpu, uint16_t opcode)
     case 0x700:
         // 7xkk - ADD Vx, byte, Set Vx = Vx + kk.
         cpu->registers.V[x] += kk;
+        break;
+    case 0x800:
+        chip8_exec_extended_eight(cpu, opcode);
         break;
     }
 }
