@@ -1,6 +1,8 @@
 #include <memory.h>
 #include <assert.h>
 #include <stdint.h>
+#include <time.h>
+#include <stdlib.h>
 #include "chip8.h"
 
 static void chip8_exec_extended(struct chip8 *cpu, uint16_t opcode);
@@ -109,7 +111,7 @@ static void chip8_exec_extended_eight(struct chip8 *cpu, uint16_t opcode)
         cpu->registers.V[y] -= cpu->registers.V[x];
         break;
     case 0x0E:
-        cpu->registers.V[0x0f] = cpu->registers.V[x] & 0x01;
+        cpu->registers.V[0x0f] = cpu->registers.V[x] & 0x80;
         cpu->registers.V[x] <<= 2;
         break;
     }
@@ -150,31 +152,51 @@ static void chip8_exec_extended(struct chip8 *cpu, uint16_t opcode)
             *PC = *PC + 2;
         }
         break;
-    case 0x400:
+    case 0x4000:
         // 4xkk - SNE Vx, byte, Skip next instruction if Vx != kk.
         if (cpu->registers.V[x] != kk)
         {
             *PC = *PC + 2;
         }
         break;
-    case 0x500:
+    case 0x5000:
         // 5xy0 - SE Vx, Vy, Skip next instruction if Vx = Vy.
         if (cpu->registers.V[x] == cpu->registers.V[y])
         {
             *PC = *PC + 2;
         }
         break;
-    case 0x600:
+    case 0x6000:
         // 6xkk - LD Vx, byte, Set Vx = kk.
         cpu->registers.V[x] = kk;
         break;
 
-    case 0x700:
+    case 0x7000:
         // 7xkk - ADD Vx, byte, Set Vx = Vx + kk.
         cpu->registers.V[x] += kk;
         break;
-    case 0x800:
+    case 0x8000:
         chip8_exec_extended_eight(cpu, opcode);
+        break;
+    case 0x9000:
+        // 9xy0 - SNE Vx, Vy, Skip next instruction if Vx != Vy.
+        if (cpu->registers.V[x] != cpu->registers.V[y])
+        {
+            *PC = *PC + 2;
+        }
+        break;
+    case 0xA000:
+        // Annn - LD I, addr, Set I = nnn.
+        cpu->registers.I = nnn;
+        break;
+    case 0xB000:
+        // Bnnn - JP V0, addr, Jump to location nnn + V0.
+        *PC = *PC + cpu->registers.V[0x00] + nnn;
+        break;
+    case 0xC000:
+        // Cxkk - RND Vx, byte, Set Vx = random byte AND kk.
+        srand(clock());
+        cpu->registers.V[x] = (rand() % 256) & kk;  
         break;
     }
 }
