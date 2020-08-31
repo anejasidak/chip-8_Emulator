@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <SDL2/SDL.h>
 #include <stdbool.h>
-#include <unistd.h>
-
 #include "config.h"
 #include "chip8.h"
 #include "chip8_memory.h"
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
 static char keyboard_map[TOTAL_KEYS] = {
     SDLK_0, SDLK_1, SDLK_2, SDLK_3,
@@ -133,7 +137,7 @@ int main(int argc, char **argv)
         SDL_RenderPresent(renderer);
         if (cpu.registers.delay_timer > 0)
         {
-            sleep(0.9);
+            usleep(100000);
             cpu.registers.delay_timer--;
         }
         if (cpu.registers.sound_timer > 0)
@@ -142,12 +146,10 @@ int main(int argc, char **argv)
             cpu.registers.sound_timer = 0;
         }
 
-        
-        uint16_t opcode = chip8_memory_get_ins(&cpu.ram, cpu.registers.PC);
+                uint16_t opcode = chip8_memory_get_ins(&cpu.ram, cpu.registers.PC);
         cpu.registers.PC += 2;
         chip8_exec(&cpu, opcode);
         printf("%02x\n", opcode);
-        sleep(0.9);
     }
 
     // Close the window and quit SDL to  clean up all initialized subsystems.
